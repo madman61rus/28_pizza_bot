@@ -1,19 +1,39 @@
-from flask import Flask, render_template , Response,request,session
+from werkzeug.exceptions import HTTPException
+from flask import Flask, Response, request, session
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_migrate import Migrate
-from models import db,Choice,Pizza
+from models import db, Choice, Pizza
 from flask_babelex import Babel
+from sqlalchemy import create_engine
+from config import SQLALCHEMY_DATABASE_URI, ADMIN_CREDENTIALS
+from sqlalchemy.orm import scoped_session, sessionmaker
+
+
+class MyModelView(ModelView):
+    def is_accessible(self):
+        auth = request.authorization
+        if not auth or (auth.username, auth.password) != ADMIN_CREDENTIALS:
+            raise HTTPException('', Response("Пожалуйста введите логин и пароль", 401,
+                                             {'WWW-Authenticate': 'Basic realm="Login Required"'}
+                                             ))
+        else:
+            return True
+
 
 app = Flask(__name__)
 app.config.from_object('config')
 db.init_app(app)
 babel = Babel(app)
 migrate = Migrate(app, db)
-
 admin = Admin(app, name='pizza', template_mode='bootstrap3')
-admin.add_view(ModelView(Pizza,db.session))
-admin.add_view(ModelView(Choice,db.session))
+admin.add_view(MyModelView(Pizza, db.session))
+admin.add_view(MyModelView(Choice, db.session))
+engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=False)
+db_session = scoped_session(sessionmaker(autocommit=False,
+                                         autoflush=False,
+                                         bind=engine))
+
 
 @babel.localeselector
 def get_locale():
@@ -21,28 +41,10 @@ def get_locale():
         session['lang'] = request.args.get('lang')
     return session.get('lang', 'rus')
 
-class AuthException():
 
-    def __init__(self, message):
-        super().__init__(message, Response(
-            "You could not be authenticated. Please refresh the page.", 401,
-            {'WWW-Authenticate': 'Basic realm="Login Required"'}
-        ))
-
-class ModelView(ModelView):
-
-    def is_accessible(self):
-        return login.current_user.is_authenticated
-
-    def check_auth(self, username, password):
-        return username == 'admin' and password == 'password'
-
-    def is_accessible(self):
-        auth = request.authorization
-        if not auth or not self.check_auth(auth.username, auth.password):
-            raise AuthException('Not authenticated.')
-        return True
-
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
 
 
 if __name__ == "__main__":

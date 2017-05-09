@@ -2,7 +2,7 @@ import telebot
 from jinja2 import Template
 from os import getenv
 
-from models_txt import catalog
+from models_json import catalog
 
 TOKEN = getenv('BOT_TOKEN')
 if not TOKEN:
