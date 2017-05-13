@@ -10,7 +10,7 @@ from config import SQLALCHEMY_DATABASE_URI, ADMIN_CREDENTIALS
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 
-class MyModelView(ModelView):
+class LoginModelView(ModelView):
     def is_accessible(self):
         auth = request.authorization
         if not auth or (auth.username, auth.password) != ADMIN_CREDENTIALS:
@@ -27,8 +27,8 @@ db.init_app(app)
 babel = Babel(app)
 migrate = Migrate(app, db)
 admin = Admin(app, name='pizza', template_mode='bootstrap3')
-admin.add_view(MyModelView(Pizza, db.session))
-admin.add_view(MyModelView(Choice, db.session))
+admin.add_view(LoginModelView(Pizza, db.session))
+admin.add_view(LoginModelView(Choice, db.session))
 engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=False)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
