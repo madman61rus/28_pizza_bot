@@ -1,8 +1,11 @@
 import telebot
 from jinja2 import Template
 from os import getenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from config import SQLALCHEMY_DATABASE_URI
+from models import Pizza
 
-from models_json import catalog
 
 TOKEN = getenv('BOT_TOKEN')
 if not TOKEN:
@@ -22,7 +25,12 @@ def greet(message):
 
 @bot.message_handler(commands=['menu'])
 def show_catalog(message):
+    engine = create_engine(SQLALCHEMY_DATABASE_URI)
+    session_class = sessionmaker(bind=engine)
+    session = session_class()
+    catalog = session.query(Pizza).all()
     bot.send_message(message.chat.id, catalog_tmpl.render(catalog=catalog), parse_mode='Markdown')
+    session.close()
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
