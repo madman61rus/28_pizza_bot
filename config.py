@@ -1,6 +1,5 @@
 import os
 
-DEBUG = True
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 database_path = os.path.join(basedir, os.environ['DATABASE_DIR'])
