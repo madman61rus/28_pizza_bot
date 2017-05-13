@@ -25,7 +25,11 @@ For example:
     export FLASK_USER='admin'
     export FLASK_USER_PASSWD='secret'
 
-Next you may run a script create_db.py
+Next you may run a script create_db.py and create migrations :
+
+    flask db init
+    flask db migrate
+    flask db upgrade
 
 # Load data from a file
 For load data from a file you must use file models_json.py for add and edit
