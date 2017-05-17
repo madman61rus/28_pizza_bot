@@ -6,6 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from config import SQLALCHEMY_DATABASE_URI
 from models import Pizza
 
+engine = create_engine(SQLALCHEMY_DATABASE_URI)
+session_class = sessionmaker(bind=engine)
+session = session_class()
 
 TOKEN = getenv('BOT_TOKEN')
 if not TOKEN:
@@ -25,9 +28,6 @@ def greet(message):
 
 @bot.message_handler(commands=['menu'])
 def show_catalog(message):
-    engine = create_engine(SQLALCHEMY_DATABASE_URI)
-    session_class = sessionmaker(bind=engine)
-    session = session_class()
     catalog = session.query(Pizza).all()
     bot.send_message(message.chat.id, catalog_tmpl.render(catalog=catalog), parse_mode='Markdown')
     session.close()
