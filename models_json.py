@@ -1,4 +1,3 @@
-# Here will be catalog models for SQLAlchemy
 
 catalog = [
     {

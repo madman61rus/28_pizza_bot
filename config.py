@@ -1,6 +1,5 @@
 import os
 
-
 basedir = os.path.abspath(os.path.dirname(__file__))
 database_path = os.path.join(basedir, os.environ['DATABASE_DIR'])
 ADMIN_CREDENTIALS = (os.environ['FLASK_USER'], os.environ['FLASK_USER_PASSWD'])
